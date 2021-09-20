@@ -1,5 +1,4 @@
 from hikari_bot.bot.bot import Bot
-import hikari
 import lightbulb
 
 

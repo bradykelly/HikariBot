@@ -11,7 +11,7 @@ import lightbulb
 
 class Bot(lightbulb.Bot):
     def __init__(self) -> None:
-        self._plugins = [p.stem for p in Path(".").glob("./testbot/bot/extensions/*.py")]
+        self._extensions = [p.stem for p in Path(".").glob("./hikari_bot/bot/extensions/*.py")]
         self.scheduler = AsyncIOScheduler()
         self.scheduler.configure(timezone="UTC")
 
@@ -29,7 +29,7 @@ class Bot(lightbulb.Bot):
         self.event_manager.subscribe(hikari.StartingEvent, self.on_starting)
         self.event_manager.subscribe(hikari.StartedEvent, self.on_started)
         self.event_manager.subscribe(hikari.StoppingEvent, self.on_stopping)
-        self.event_manager.subscribe(hikari.StartedEvent, self.on_stopped)   
+        self.event_manager.subscribe(hikari.StoppedEvent, self.on_stopped)   
         self.event_manager.subscribe(hikari.ExceptionEvent, self.on_exception) 
         self.event_manager.subscribe(hikari.MessageCreateEvent, self.on_message_create)    
 
@@ -41,8 +41,9 @@ class Bot(lightbulb.Bot):
         )
 
     async def on_starting(self, event: hikari.StartingEvent) -> None:
-        for ext in self.extensions:
-            self.load_extension(f"testbot.extensions.{ext}")
+        logging.info("Bot starting")
+        for ext in self._extensions:
+            super().load_extension(f"hikari_bot.bot.extensions.{ext}")
             logging.info(f"Loaded extension {ext}")
 
     async def on_started(self, event: hikari.StartedEvent) -> None:
@@ -60,7 +61,8 @@ class Bot(lightbulb.Bot):
         pass
 
     async def on_message_create(self, event: hikari.MessageCreateEvent) -> None:
-        if event.message.member.is_bot or isinstance(event.message.channel_id, hikari.DMChannel):
+        #if event.message.author.is_bot or isinstance(event.message.channel_id, hikari.DMChannel):
+        if isinstance(event.message.channel_id, hikari.DMChannel):
             return
 
         logging.info(f"Message by {event.message.author}: {event.message.content}")
